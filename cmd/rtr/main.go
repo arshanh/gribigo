@@ -26,8 +26,12 @@ import (
 )
 
 var (
-	certFile = flag.String("cert", "", "cert is the path to the server TLS certificate file")
-	keyFile  = flag.String("key", "", "key is the path to the server TLS key file")
+	certFile  = flag.String("cert", "", "cert is the path to the server TLS certificate file")
+	keyFile   = flag.String("key", "", "key is the path to the server TLS key file")
+	gnmiAddr  = flag.String("gnmiaddr", "localhost", "Address for gNMI server to bind to")
+	gnmiPort  = flag.Int("gnmiport", 0, "Port for gNMI server to listen on")
+	gribiAddr = flag.String("gribiaddr", "localhost", "Address for gRIBI server to bind to")
+	gribiPort = flag.Int("gribiport", 0, "Port for gRIBI server to listen on")
 )
 
 func main() {
@@ -43,7 +47,14 @@ func main() {
 	if err != nil {
 		log.Exitf("cannot initialise TLS, got: %v", err)
 	}
-	d, err := device.New(ctx, creds)
+
+	opts := []device.DevOpt{}
+	opts = append(opts, creds)
+	// FIXME: Naming convention is swapped for these two
+	opts = append(opts, device.GRIBIPort(*gribiAddr, *gribiPort))
+	opts = append(opts, device.GNMIAddr(*gnmiAddr, *gnmiPort))
+
+	d, err := device.New(ctx, opts...)
 	if err != nil {
 		log.Exitf("cannot start device, %v", err)
 	}
