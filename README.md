@@ -22,3 +22,11 @@ document for additional details relating to contributions.
 ## Licensing
 
 This project is licensed under the Apache 2.0 license.
+
+## Docker
+To build and launch the server inside a docker container:
+
+`make build && make rtr`
+
+To run the tests inside a container:
+`make test`
