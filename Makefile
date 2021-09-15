@@ -1,3 +1,4 @@
+# Using makefile because ADS doesn't support docker-compose
 
 IMAGE_NAME = gribigo
 PWD := $(shell pwd)
@@ -14,14 +15,24 @@ RTR_KEY = testcommon/testdata/server.key
 
 .PHONY: test, rtr
 
+# So that this works on RHEL which doesn't have docker
+RC=$(shell which podman 1> /dev/null; echo $$?)
+ifeq ($(RC), 0)
+	DOCKER_RUN=podman run
+	DOCKER_BUILD=buildah build-using-dockerfile
+else
+	DOCKER_RUN=docker run
+	DOCKER_BUILD=docker build
+endif
+
 build:
-	docker build -q . -t $(IMAGE_NAME);
+	$(DOCKER_BUILD) -t $(IMAGE_NAME) .;
 
 test: build
-	docker run $(IMAGE_NAME) go test -v -coverprofile=profile.cov ./..;
+	$(DOCKER_RUN) $(IMAGE_NAME) go test -v -coverprofile=profile.cov ./..;
 
-RTR_OPTS = -p $(GRIBI_PORT):$(GRIBI_PORT) \
-			  -p $(GNMI_PORT):$(GNMI_PORT)
+RTR_OPTS = --publish $(GRIBI_PORT):$(GRIBI_PORT) \
+			  --publish $(GNMI_PORT):$(GNMI_PORT)
 
 RTR_CMD =  rtr \
 		-logtostderr \
@@ -33,4 +44,4 @@ RTR_CMD =  rtr \
 		-gnmiport $(GNMI_PORT)
 
 rtr:
-	docker run $(RTR_OPTS) $(IMAGE_NAME) $(RTR_CMD)
+	$(DOCKER_RUN) $(RTR_OPTS) $(IMAGE_NAME) $(RTR_CMD)
