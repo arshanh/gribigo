@@ -465,7 +465,7 @@ func (s *Server) checkParams(id string, p *spb.SessionParameters, gotMsg bool) (
 	}
 
 	cp := &clientParams{
-		FIBAck:       p.GetAckType() == spb.SessionParameters_RIB_ACK,
+		FIBAck:       p.GetAckType() == spb.SessionParameters_RIB_AND_FIB_ACK,
 		ExpectElecID: p.GetRedundancy() == spb.SessionParameters_SINGLE_PRIMARY,
 		Persist:      p.GetPersistence() == spb.SessionParameters_PRESERVE,
 	}
@@ -509,6 +509,7 @@ func (s *Server) checkClientsConsistent(id string, p *clientParams) (bool, error
 		}
 
 		if !state.params.Equal(p) {
+			log.Errorf("client %s is not consistent with client %s: %+v != %+v", id, cid, p, state.params)
 			return false, nil
 		}
 	}
