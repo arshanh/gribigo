@@ -36,6 +36,7 @@ RTR_OPTS = --publish $(GRIBI_PORT):$(GRIBI_PORT) \
 
 RTR_CMD =  rtr \
 		-logtostderr \
+		-v 10 \
 		-cert $(RTR_CERT) \
 		-key $(RTR_KEY) \
 		-gribiaddr $(GRIBI_ADDR) \
@@ -44,4 +45,7 @@ RTR_CMD =  rtr \
 		-gnmiport $(GNMI_PORT)
 
 rtr:
+	$(DOCKER_RUN) $(RTR_OPTS) $(IMAGE_NAME) $(RTR_CMD)
+
+compliance:
 	$(DOCKER_RUN) $(RTR_OPTS) $(IMAGE_NAME) $(RTR_CMD)

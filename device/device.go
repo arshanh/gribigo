@@ -285,7 +285,9 @@ func (d *Device) startgRIBI(ctx context.Context, host string, port int, creds *t
 		return nil, fmt.Errorf("cannot create gRIBI server, %v", err)
 	}
 
-	s := grpc.NewServer(grpc.Creds(creds.c))
+	// s := grpc.NewServer(grpc.Creds(creds.c))
+	// FIXME: Disabling TLS for now
+	s := grpc.NewServer()
 	ts := server.New(opt...)
 	spb.RegisterGRIBIServer(s, ts)
 	d.gribiAddr = l.Addr().String()
