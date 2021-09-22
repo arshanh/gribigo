@@ -248,6 +248,8 @@ func (s *Server) Modify(ms spb.GRIBI_ModifyServer) error {
 		for {
 			in, err := ms.Recv()
 			if err == io.EOF {
+				log.V(2).Infof("Stream closed for client %s", cid)
+				errCh <- nil
 				return
 			}
 			if err != nil {
@@ -262,6 +264,7 @@ func (s *Server) Modify(ms spb.GRIBI_ModifyServer) error {
 
 			switch {
 			case in == nil:
+				// This means the channel has been closed
 				log.Errorf("received nil message on Modify channel")
 				skipWrite = true
 			case in.Params != nil:
