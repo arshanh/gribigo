@@ -50,8 +50,7 @@ func main() {
 
 	opts := []device.DevOpt{}
 	opts = append(opts, creds)
-	// FIXME: Naming convention is swapped for these two
-	opts = append(opts, device.GRIBIPort(*gribiAddr, *gribiPort))
+	opts = append(opts, device.GRIBIAddr(*gribiAddr, *gribiPort))
 	opts = append(opts, device.GNMIAddr(*gnmiAddr, *gnmiPort))
 
 	d, err := device.New(ctx, opts...)

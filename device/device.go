@@ -80,9 +80,8 @@ type gRIBIAddr struct {
 // isDevOpt implements the DevOpt interface.
 func (*gRIBIAddr) isDevOpt() {}
 
-// GRIBIPort is a device option that specifies that the port that should be listened on
-// is i.
-func GRIBIPort(host string, i int) *gRIBIAddr {
+// GRIBIAddr specifies the host and port that the gRIBI server should listen on.
+func GRIBIAddr(host string, i int) *gRIBIAddr {
 	return &gRIBIAddr{host: host, port: i}
 }
 
