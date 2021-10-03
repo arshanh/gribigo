@@ -677,6 +677,7 @@ func (r *RIB) canResolve(netInst string, candidate *aft.RIB) (bool, error) {
 			}
 			// nexthops are resolved in the same NI as the next-hop-group
 			if _, ok := niRIB.GetNextHop(n.GetIndex()); !ok {
+				log.V(2).Infof("Can't resolve NH %d in NHG %d, NI %s", n.GetIndex(), g.GetId(), netInst)
 				// this is not an error - it's just that we can't resolve this seemingly
 				// valid looking NHG at this point.
 				return false, nil
