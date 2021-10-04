@@ -3,12 +3,10 @@
 IMAGE_NAME = gribigo
 PWD := $(shell pwd)
 
-GRIBI_PORT = 57333
-
-GRIBI_PORT = 57333
-GRIBI_ADDR = 0.0.0.0
-GNMI_PORT = 57334
-GNMI_ADDR = 0.0.0.0
+GRIBI_PORT ?= 57333
+GRIBI_ADDR ?= 0.0.0.0
+GNMI_PORT ?= 57334
+GNMI_ADDR ?= 0.0.0.0
 
 RTR_CERT = testcommon/testdata/server.cert
 RTR_KEY = testcommon/testdata/server.key
