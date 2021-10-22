@@ -23,7 +23,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/openconfig/gribigo/constants"
 	"github.com/openconfig/gribigo/rib"
 	"github.com/openconfig/gribigo/server"
 	"github.com/openconfig/gribigo/testcommon"
@@ -781,14 +780,16 @@ func TestGet(t *testing.T) {
 		desc string
 		// Operations to perform on the server before we make the request.
 		inOperations []*spb.AFTOperation
-		inGetRequest *GetRequest
+		inGetRequest *spb.GetRequest
 		wantResponse *spb.GetResponse
 		wantErr      bool
 	}{{
 		desc: "empty operations",
-		inGetRequest: &GetRequest{
-			NetworkInstance: server.DefaultNetworkInstanceName,
-			AFT:             constants.All,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: server.DefaultNetworkInstanceName,
+			},
+			Aft: spb.AFTType_ALL,
 		},
 		wantResponse: &spb.GetResponse{},
 	}, {
@@ -802,9 +803,11 @@ func TestGet(t *testing.T) {
 				},
 			},
 		}},
-		inGetRequest: &GetRequest{
-			NetworkInstance: server.DefaultNetworkInstanceName,
-			AFT:             constants.All,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: server.DefaultNetworkInstanceName,
+			},
+			Aft: spb.AFTType_ALL,
 		},
 		wantResponse: &spb.GetResponse{
 			Entry: []*spb.AFTEntry{{
@@ -836,9 +839,11 @@ func TestGet(t *testing.T) {
 				},
 			},
 		}},
-		inGetRequest: &GetRequest{
-			NetworkInstance: server.DefaultNetworkInstanceName,
-			AFT:             constants.All,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: server.DefaultNetworkInstanceName,
+			},
+			Aft: spb.AFTType_ALL,
 		},
 		wantResponse: &spb.GetResponse{
 			Entry: []*spb.AFTEntry{{
@@ -879,9 +884,11 @@ func TestGet(t *testing.T) {
 				},
 			},
 		}},
-		inGetRequest: &GetRequest{
-			NetworkInstance: server.DefaultNetworkInstanceName,
-			AFT:             constants.All,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: server.DefaultNetworkInstanceName,
+			},
+			Aft: spb.AFTType_ALL,
 		},
 		wantResponse: &spb.GetResponse{
 			Entry: []*spb.AFTEntry{{
@@ -905,9 +912,11 @@ func TestGet(t *testing.T) {
 				},
 			},
 		}},
-		inGetRequest: &GetRequest{
-			NetworkInstance: "VRF-FOO",
-			AFT:             constants.All,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: "VRF-FOO",
+			},
+			Aft: spb.AFTType_ALL,
 		},
 		wantResponse: &spb.GetResponse{
 			Entry: []*spb.AFTEntry{{
@@ -939,9 +948,11 @@ func TestGet(t *testing.T) {
 				},
 			},
 		}},
-		inGetRequest: &GetRequest{
-			AllNetworkInstances: true,
-			AFT:                 constants.All,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_All{
+				All: &spb.Empty{},
+			},
+			Aft: spb.AFTType_ALL,
 		},
 		wantResponse: &spb.GetResponse{
 			Entry: []*spb.AFTEntry{{
@@ -964,19 +975,14 @@ func TestGet(t *testing.T) {
 		},
 	}, {
 		desc:         "invalid request - nothing specified",
-		inGetRequest: &GetRequest{},
+		inGetRequest: &spb.GetRequest{},
 		wantErr:      true,
 	}, {
-		desc: "invalid request - both fields specified",
-		inGetRequest: &GetRequest{
-			NetworkInstance:     "foo",
-			AllNetworkInstances: true,
-		},
-		wantErr: true,
-	}, {
 		desc: "invalid request, unsupported AFT",
-		inGetRequest: &GetRequest{
-			NetworkInstance: "foo",
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: "foo",
+			},
 		},
 		wantErr: true,
 	}, {
@@ -1006,9 +1012,11 @@ func TestGet(t *testing.T) {
 				},
 			},
 		}},
-		inGetRequest: &GetRequest{
-			NetworkInstance: server.DefaultNetworkInstanceName,
-			AFT:             constants.IPv4,
+		inGetRequest: &spb.GetRequest{
+			NetworkInstance: &spb.GetRequest_Name{
+				Name: server.DefaultNetworkInstanceName,
+			},
+			Aft: spb.AFTType_IPV4,
 		},
 		wantResponse: &spb.GetResponse{
 			Entry: []*spb.AFTEntry{{
@@ -1094,6 +1102,36 @@ func TestGet(t *testing.T) {
 					return prototext.Format(a) < prototext.Format(b)
 				})); diff != "" {
 				t.Fatalf("did not get expected responses, diff(-got,+want):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestOpResultString(t *testing.T) {
+	tests := []struct {
+		desc     string
+		inResult *OpResult
+		want     string
+	}{{
+		desc:     "nil input",
+		inResult: nil,
+		want:     "<nil>",
+	}, {
+		desc:     "all fields nil",
+		inResult: &OpResult{},
+		want:     "<0 (0 nsec):>",
+	}, {
+		desc: "nil type in details",
+		inResult: &OpResult{
+			OperationID: 42,
+		},
+		want: "<0 (0 nsec): AFTOperation { ID: 42, Details: <nil>, Status: UNSET }>",
+	}}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			if got := tt.inResult.String(); got != tt.want {
+				t.Fatalf("did not get expected string, got: %s, want: %s", got, tt.want)
 			}
 		})
 	}
